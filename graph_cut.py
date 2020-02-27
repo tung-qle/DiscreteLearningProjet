@@ -51,7 +51,6 @@ class GraphCut(object):
                 self.mincut = visited
                 break
             self.augmenting_flow(connections, inc)
-            print(self.graph)
 
     def calculate_cut_value(self):
         result = 0
@@ -70,28 +69,3 @@ class GraphCut(object):
         for (_, _, w) in neighbor_s:
             result = result + w
         return result
-
-def random_graph(n, epsilon = 0.2):
-    connections = []
-    nodes = []
-    for i in range(n):
-        nodes.append(i)
-        for j in range(n):
-            if j == i:
-                continue
-            t = np.random.rand()
-            if (t <= epsilon):
-                w = np.random.randint(10)
-                connections.append((i,j,w))
-    return nodes, connections
-
-#nodes = [0,1,2,3]
-#connections = [(0, 1, 2), (0, 2, 9), (1, 2, 1), (2, 1, 2), (1, 3, 5), (2, 3, 4)]
-#nodes = [0, 1, 2]
-#connections = [(0, 1, 3), (0, 2, 7), (1, 0, 1), (1, 2, 7), (2, 0, 6), (2, 1, 9)]
-nodes, connections = random_graph(10, epsilon = 0.5)
-g = GraphCut(nodes, connections)
-print(connections)
-g.min_cut(0, 3)
-print(g.calculate_max_flow(0,4))
-print(g.calculate_cut_value())
