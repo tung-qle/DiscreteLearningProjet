@@ -14,7 +14,7 @@ def random_graph(n, epsilon = 0.2, source = 0, target = 3):
         for j in range(n):
             if j == i:
                 continue
-            r = 2
+            r = 20
             if i == source or j == target:
                 r = 150
             t = np.random.rand()
@@ -52,7 +52,7 @@ def check_validity(graph, s, t, pr = False):
 
 s = 0
 t = 3
-nodes, connections = random_graph(500, epsilon = 0.05, source = s, target = t)
+nodes, connections = random_graph(1000, epsilon = 0.005, source = s, target = t)
 start = time.time()
 g = PushRelabel(nodes, connections)
 g.min_cut(s, t)
