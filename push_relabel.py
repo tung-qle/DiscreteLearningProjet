@@ -3,6 +3,9 @@ import numpy as np
 import queue
 
 class PushRelabel(object):
+    """
+    Performing a minimal graphcut using Push-Relabel algorithm.
+    """
     def __init__(self, nodes, connections):
         """
         __init__: Initialize graph
@@ -95,7 +98,7 @@ class PushRelabel(object):
 
         residual_graph = Graph(self.graph.keys(), self.residual_graph_build())
         _, visited, _ = residual_graph.augmenting_path(s, t)
-        print(visited)
+        # print(visited)
         self.mincut = visited
 
     def calculate_cut_value(self):

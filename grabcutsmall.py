@@ -1,4 +1,5 @@
-import igraph as ig
+from graph_cut import GraphCut
+from push_relabel import PushRelabel
 from GMM import GaussianMixture
 import numpy as np
 import copy
@@ -16,11 +17,11 @@ DRAW_PR_FG = {'color' : GREEN, 'val' : 3}
 DRAW_PR_BG = {'color' : RED, 'val' : 2}
 INF = 1000000
 
-class GrabCut(object):
+class GrabCutSmall(object):
     """
-    GrabCut using igraph's minimal graph cut.
+    GrabCut using our minimal graph cut implementation.
     """
-    def __init__(self, img, mask, rect = None, gmm_components = 5):
+    def __init__(self, img, mask, rect = None, gmm_components = 5, pushrelabel=True):
         self.img = np.asarray(img, dtype = np.float64)
         self.rows, self.cols, _ = img.shape
         self.gmm_components = gmm_components
@@ -37,6 +38,7 @@ class GrabCut(object):
         self.source = self.rows * self.cols
         self.target = self.rows * self.cols + 1
         self.calculate_beta_smoothness()
+        self.pushrelabel = pushrelabel
         #start = time.time()
         #self.build_graph_init()
         #end = time.time()
@@ -148,14 +150,25 @@ class GrabCut(object):
 
     def min_cut_segmentation(self):
         edges, capacity = self.build_graph()
-        graph = ig.Graph(self.rows * self.cols + 2)
-        graph.add_edges(edges)
-        mincut = graph.st_mincut(self.source, self.target, capacity)
+        nodes = np.arange(self.rows * self.cols + 2)
+        connections = []
+        for edge, c in zip(edges, capacity):
+            connections.append((edge[0], edge[1], c))
+
+        if self.pushrelabel:
+            g = PushRelabel(nodes, connections)
+            g.min_cut(self.source, self.target)
+            partition = [i for i in range(len(nodes)) if g.mincut[i]]
+        else:
+            g = GraphCut(nodes, connections)
+            g.min_cut(self.source, self.target)
+            partition = [i for i in range(len(nodes)) if g.mincut[i]]
+
         pr_indexes = np.where(np.logical_or(
             self.mask == DRAW_PR_BG['val'], self.mask == DRAW_PR_FG['val']))
         img_indexes = np.arange(self.rows * self.cols,
                                 dtype=np.uint32).reshape(self.rows, self.cols)
-        self.mask[pr_indexes] = np.where(np.isin(img_indexes[pr_indexes], mincut.partition[0]),
+        self.mask[pr_indexes] = np.where(np.isin(img_indexes[pr_indexes], partition),
                                          DRAW_PR_FG['val'], DRAW_PR_BG['val'])
         self.indexes_classification()
 

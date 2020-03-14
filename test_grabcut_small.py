@@ -1,11 +1,16 @@
-from grabcut import GrabCut
+from grabcutsmall import GrabCutSmall
 import numpy as np
 import cv2 as cv
 import time
 
 BLUE = [255, 0, 0]        # rectangle color
 
-def test(filename, rect, n_iter=1):
+def imshow_zoom(name, img, scale=10):
+    cv.namedWindow(name, cv.WINDOW_NORMAL)
+    cv.imshow(name, img)
+    cv.resizeWindow(name, scale*img.shape[1], scale*img.shape[0])
+
+def test(filename, rect):
     print("==================================")
     print("Input image:", filename)
     img = cv.imread(filename)
@@ -22,32 +27,26 @@ def test(filename, rect, n_iter=1):
     for i in range(rect[1]-1,rect[1] + rect[3]+1):
         img_rect[i+1, rect[0]] = BLUE
         img_rect[i+1, rect[0] + rect[2]+1] = BLUE
-
-    img_outs = []
-
-    print("\nPerforming the sementation...")
+    
+    print("\nPerforming the sementation with Edmonds–Karp...")
     start = time.time()
-    g = GrabCut(img, mask, rect)
-    img_outs.append(img*(mask[:,:,None]==3))
+    g = GrabCutSmall(img, mask, rect, pushrelabel=False)
     end = time.time()
     print("Done in: ", end - start,"s !")
-    if n_iter > 1:
-        for i in range(n_iter-1):
-            print("\nIteration",i+2,"..." )
-            start = time.time()
-            g.run()
-            img_outs.append(img*(mask[:,:,None]==3))
-            end = time.time()
-            print("Done in: ", end - start,"s !")
+
+    print("\nPerforming the sementation with Push-Relabel...")
+    start = time.time()
+    g = GrabCutSmall(img, mask, rect, pushrelabel=True)
+    end = time.time()
+    print("Done in: ", end - start,"s !")
     
     print("\nVisualizing... Press anykey to exit")
+    img_out = img*(mask[:,:,None]==3)
 
-    cv.imshow("input", img)
-    cv.imshow("input with rectangle", img_rect)
-    cv.imshow("iter1", img_outs[0])
-    if n_iter > 1:
-        for i in range(n_iter-1):
-            cv.imshow("iter"+str(i+2), img_outs[i+1])
+    imshow_zoom('input', img)
+    imshow_zoom("input with rectangle", img_rect)
+    imshow_zoom("output", img_out)
     cv.waitKey(0)
 
-test(filename = 'messi5.jpg', rect = (49, 42, 459, 296), n_iter=2)
+test(filename = 'ballon_small.jpg', rect = (2, 1, 14, 16))
+test(filename = 'dog_small.jpg', rect = (4, 8, 38, 37))

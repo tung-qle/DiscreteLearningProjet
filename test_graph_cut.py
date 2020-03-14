@@ -3,6 +3,7 @@ from graph import Graph
 from push_relabel import PushRelabel
 import numpy as np
 import time
+import sys
 
 def random_graph(n, epsilon = 0.2, source = 0, target = 3):
     connections = []
@@ -50,23 +51,37 @@ def check_validity(graph, s, t, pr = False):
             result = False
     return result
 
+if len(sys.argv) == 3:
+    n_nodes = int(sys.argv[1])
+    eps = float(sys.argv[2])
+else:
+    n_nodes = 600
+    eps = 0.005
+
 s = 0
 t = 3
-nodes, connections = random_graph(1000, epsilon = 0.005, source = s, target = t)
+
+print("Creating a random graph...")
+nodes, connections = random_graph(n_nodes, epsilon = eps, source = s, target = t)
+print("Number of nodes: V =", len(nodes))
+print("Number of edges: E =", len(connections))
+
+print("\nRunning PushRelabel algorithm...")
 start = time.time()
 g = PushRelabel(nodes, connections)
 g.min_cut(s, t)
-print(g.calculate_max_flow(s,t))
-print(g.calculate_cut_value())
-print(check_validity(g.graph, s, t, True))
+print("Maxflow: ", g.calculate_max_flow(s,t))
+print("Cut value: ", g.calculate_cut_value())
+print("Check_valid: ", check_validity(g.graph, s, t, True))
 end = time.time()
-print("Time: ", end - start)
+print("Time: ", end - start,"s.")
 
+print("\nRunning Edmonds–Karp algorithm...")
 start = time.time()
 g = GraphCut(nodes, connections)
 g.min_cut(s, t)
-print(g.calculate_max_flow(s,t))
-print(g.calculate_cut_value())
-print(check_validity(g.graph, s, t, False))
+print("Maxflow: ", g.calculate_max_flow(s,t))
+print("Cut value: ", g.calculate_cut_value())
+print("Check_valid: ", check_validity(g.graph, s, t, False))
 end = time.time()
-print("Time: ", end - start)
+print("Time: ", end - start,"s.")

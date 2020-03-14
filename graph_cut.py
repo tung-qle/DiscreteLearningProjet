@@ -2,6 +2,9 @@ from graph import Graph
 import numpy as np
 
 class GraphCut(object):
+    """
+    Performing a minimal graphcut using Edmonds–Karp algorithm.
+    """
     def __init__(self, nodes, connections):
         """
         __init__: Initialize graph
@@ -47,7 +50,7 @@ class GraphCut(object):
             connections, visited, inc = residual_graph.augmenting_path(s, t)
             #print(self.calculate_max_flow(s,t), inc)
             if inc <= 0:
-                print(visited)
+                # print(visited)
                 self.mincut = visited
                 break
             self.augmenting_flow(connections, inc)
