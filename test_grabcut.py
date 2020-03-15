@@ -5,7 +5,7 @@ import time
 
 BLUE = [255, 0, 0]        # rectangle color
 
-def test(filename, rect, n_iter=1):
+def test(filename, rect, n_iter=1, save=False):
     print("==================================")
     print("Input image:", filename)
     img = cv.imread(filename)
@@ -15,13 +15,14 @@ def test(filename, rect, n_iter=1):
     print("Mask shape:", mask.shape)
     print("Rectangle:", rect)
 
-    img_rect = np.pad(img.copy(), ((1,1),(1,1),(0,0)), 'constant')
-    for i in range(rect[0]-1,rect[0] + rect[2]+1):
-        img_rect[rect[1], i+1] = BLUE
-        img_rect[rect[1] + rect[3]+1, i+1] = BLUE
-    for i in range(rect[1]-1,rect[1] + rect[3]+1):
-        img_rect[i+1, rect[0]] = BLUE
-        img_rect[i+1, rect[0] + rect[2]+1] = BLUE
+    img_rect = img.copy()
+    for i in range(rect[0],rect[0] + rect[2]):
+        img_rect[rect[1], i] = BLUE
+        img_rect[rect[1] + rect[3]-1, i] = BLUE
+
+    for i in range(rect[1],rect[1] + rect[3]):
+        img_rect[i, rect[0]] = BLUE
+        img_rect[i, rect[0] + rect[2]-1] = BLUE
 
     img_outs = []
 
@@ -50,4 +51,12 @@ def test(filename, rect, n_iter=1):
             cv.imshow("iter"+str(i+2), img_outs[i+1])
     cv.waitKey(0)
 
-test(filename = 'messi5.jpg', rect = (49, 42, 459, 296), n_iter=2)
+    print("Saving outputs to "+filename.split('.')[0]+'_output.png')
+    if save:
+        img_comb = np.concatenate((img, img_rect), axis=1)
+        img_out_comb = np.concatenate(img_outs, axis=1)
+        img_comb = np.concatenate((img_comb, img_out_comb), axis=1)
+        cv.imwrite(filename.split('.')[0]+'_output.png', img_comb)
+
+# test(filename = 'messi5.jpg', rect = (49, 42, 459, 296), n_iter=2)
+test(filename = 'u23_vietnam.jpg', rect = (32, 24, 588, 390), n_iter=2, save=True)
